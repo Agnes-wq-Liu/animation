@@ -73,6 +73,7 @@ public class CollisionProcessor {
             	double [] u = new double[] {b1.v.x, b1.v.y, b1.omega, b2.v.x,b2.v.y,b2.omega};
             	double [] f = new double[] {b1.force.x, b1.force.y, b1.torque, b2.force.x, b2.force.y, b2.torque};
             	double [] m = new double[] {b1.minv, b1.minv, b1.jinv, b2.minv, b2.minv, b2.jinv};
+            	
             	for (int j=0;j<u.length;j++) {
             		b[2*i]+=c.J1[j]*(u[j]+dt*f[j]*m[j]);
             		//bounce
@@ -89,9 +90,9 @@ public class CollisionProcessor {
         			c.iter = true;
         			for (int k=0;k<3;k++) {
 	        			deltaV[3*b1.index+k] +=m[k]*c.J1[k]*b1.lambdaNorm;
-	        			deltaV[3*b1.index+k] +=m[k]*c.J2[k]*b1.lambdaTan;
+//	        			deltaV[3*b1.index+k] +=m[k]*c.J2[k]*b1.lambdaTan;
 	        			deltaV[3*b2.index+k] +=m[k+3]*c.J1[k+3]*b2.lambdaNorm;
-	        			deltaV[3*b2.index+k] +=m[k+3]*c.J2[k+3]*b2.lambdaTan;
+//	        			deltaV[3*b2.index+k] +=m[k+3]*c.J2[k+3]*b2.lambdaTan;
 	        		}
                 }
             }
@@ -103,22 +104,22 @@ public class CollisionProcessor {
 //	        	lambda_i_new = lambda_i + (-b-J*v)/Dii
 	        		double lKplus1 = -b[2*j]/Dii[2*j] + lambda[2*j];
 					for (int k = 0; k < 3; k ++) {
-						lKplus1 -= c.J1[k] * deltaV[3* c.body1.index + k] / Dii[2* j];
-						lKplus1 -= c.J1[k + 3]  * deltaV[3* c.body2.index + k]/ Dii[2* j];
+						lKplus1 -= c.J1[k] * deltaV[3* c.body1.index + k] / Dii[2*j];
+						lKplus1 -= c.J1[k + 3]  * deltaV[3* c.body2.index+k]/ Dii[2*j];
 					}
 					lKplus1 = Math.max(0,lKplus1);
 	        		double delLamb = lKplus1 - lambda[2*j];
 	        		lambda[2*j] = lKplus1;
-	        		double high = mu* lKplus1;
+	        		double high = mu*lKplus1;
 	        		
 //	        		update deltaV = minv*J*delta_Lambda
 	        		double [] m = new double[] {c.body1.minv, c.body1.minv, c.body1.jinv, c.body2.minv, c.body2.minv, c.body2.jinv};
-//	        		if (!c.iter) {
+
 	        		for (int k=0;k<3;k++) {
 	        			deltaV[3*c.body1.index+k] +=m[k]*c.J1[k]*delLamb;
 	        			deltaV[3*c.body2.index+k] +=m[k+3]*c.J1[k+3]*delLamb;
 	        		}
-//	        		}
+	        		
 	        		if(i==iterations.getValue()-1 && warmStart.getValue()) {
 	        			//last iteration I update the lambda attributes
 	        			c.body1.lN = lambda[2*j];
@@ -136,12 +137,11 @@ public class CollisionProcessor {
 	        		lambFric = Math.min(lambFric, high);
 	        		delLamb = lambFric - lambda[2*j+1];
 	        		lambda[2*j+1] = lambFric;
-//	        		if (!c.iter) {
+
 	        		for (int k=0;k<3;k++) {
 	        			deltaV[3*c.body1.index+k] +=m[k]*c.J2[k]*delLamb;
 	        			deltaV[3*c.body2.index+k] +=m[k+3]*c.J2[k+3]*delLamb;
 	        		}
-//	        		}
 	        		if(i==iterations.getValue()-1 && warmStart.getValue()) {
 	        			//last iteration I update the lambda hash and position hash
 	        			c.body1.lF = lambda[2*j+1];
